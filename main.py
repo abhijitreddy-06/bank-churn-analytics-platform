@@ -15,7 +15,7 @@ MODEL_PATH = os.path.join(BASE_DIR, "models", "xgboost_churn_model.pkl")
 
 # Fallback for local testing if path differs
 if not os.path.exists(MODEL_PATH):
-    MODEL_PATH = "A:\\practice\\models\\xgboost_churn_model.pkl"
+    MODEL_PATH = "MODEL_PATH\\models\\xgboost_churn_model.pkl"
 
 try:
     package = joblib.load(MODEL_PATH)
