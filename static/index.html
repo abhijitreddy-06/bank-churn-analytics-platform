@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Churn Prediction | Bank Analytics</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #EEF2FF;
+            --primary-dark: #4338CA;
+            --secondary: #7C3AED;
+            --success: #10B981;
+            --success-light: #D1FAE5;
+            --danger: #EF4444;
+            --danger-light: #FEE2E2;
+            --warning: #F59E0B;
+            --light: #F9FAFB;
+            --dark: #111827;
+            --card-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #F3F4F6;
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 1000px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            min-height: 600px;
+        }
+
+        #churn-form {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .card-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--card-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-text h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .header-text p {
+            color: #6B7280;
+            font-size: 0.95rem;
+        }
+
+        /* NEW: Demo Button Styling */
+        .demo-btn {
+            background: var(--light);
+            color: var(--primary);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .demo-btn:hover {
+            background: var(--primary-light);
+            border-color: var(--primary-light);
+        }
+
+        .card-content {
+            display: flex;
+            flex: 1;
+            padding: 0;
+        }
+
+        .card-left,
+        .card-right {
+            flex: 1;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-left {
+            border-right: 1px solid var(--border-color);
+        }
+
+        .form-section {
+            margin-bottom: 28px;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .field {
+            margin-bottom: 4px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .required::after {
+            content: "*";
+            color: var(--danger);
+            margin-left: 4px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #D1D5DB;
+            background: white;
+            color: var(--dark);
+            font-size: 0.9rem;
+            transition: var(--transition);
+            outline: none;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        input.error {
+            border-color: var(--danger);
+        }
+
+        input.valid {
+            border-color: var(--success);
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.75rem;
+            margin-top: 4px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .input-hint {
+            font-size: 0.75rem;
+            color: #9CA3AF;
+            margin-top: 4px;
+        }
+
+        .card-footer {
+            padding: 24px 32px;
+            border-top: 1px solid var(--border-color);
+            background: var(--card-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button.submit-btn {
+            padding: 14px 40px;
+            border-radius: 8px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            min-width: 200px;
+        }
+
+        button.submit-btn:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+
+        button.submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #9CA3AF;
+        }
+
+        .button-loading {
+            position: relative;
+            color: transparent;
+            min-width: 200px;
+        }
+
+        .button-loading::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 20px;
+            height: 20px;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .result-card {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            display: none;
+            margin-top: 20px;
+        }
+
+        .result-card.show {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .result-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            flex-shrink: 0;
+            background: #F3F4F6;
+        }
+
+        .result-icon.stay {
+            background: var(--success-light);
+        }
+
+        .result-icon.leave {
+            background: var(--danger-light);
+        }
+
+        .result-text h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .result-text p {
+            color: #6B7280;
+            font-size: 0.85rem;
+        }
+
+        .prediction-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            text-align: center;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-stay {
+            background: var(--success-light);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .badge-leave {
+            background: var(--danger-light);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .confidence-meter {
+            margin-top: 20px;
+        }
+
+        .confidence-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .confidence-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .confidence-value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .confidence-bar {
+            height: 8px;
+            background: #E5E7EB;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: var(--primary);
+        }
+
+        .confidence-stay .confidence-fill {
+            background: var(--success);
+        }
+
+        .confidence-leave .confidence-fill {
+            background: var(--danger);
+        }
+
+        .confidence-description {
+            font-size: 0.75rem;
+            color: #6B7280;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        /* NEW: Explanation Section Styles */
+        .explanation-section {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .explanation-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .factor-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+        }
+
+        .factor-name {
+            color: #4B5563;
+        }
+
+        .factor-impact {
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .impact-risk {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .impact-safe {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: auto;
+            font-size: 0.75rem;
+            color: #9CA3AF;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        @media (max-width: 1024px) {
+            .card-container {
+                flex-direction: column;
+                max-width: 600px;
+            }
+
+            .card-content {
+                flex-direction: column;
+            }
+
+            .card-left {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .card-container {
+                max-width: 100%;
+            }
+
+            .card-header {
+                padding: 20px 24px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .card-left,
+            .card-right {
+                padding: 24px;
+            }
+
+            .card-footer {
+                padding: 20px 24px;
+            }
+
+            .card-header h1 {
+                font-size: 1.5rem;
+            }
+
+            button.submit-btn {
+                min-width: 180px;
+                padding: 12px 32px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card-container">
+        <form id="churn-form">
+            <div class="card-header">
+                <div class="header-text">
+                    <h1>Customer Churn Prediction</h1>
+                    <p>Analyze customer retention likelihood using AI</p>
+                </div>
+                <button type="button" id="demo-btn" class="demo-btn">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+                        </path>
+                    </svg>
+                    Auto-Fill Demo Data
+                </button>
+            </div>
+
+            <div class="card-content">
+                <div class="card-left">
+                    <div class="form-section">
+                        <div class="section-title">Personal Information</div>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label for="creditScore" class="required">Credit Score</label>
+                                <input type="number" id="creditScore" min="300" max="850" required value=""
+                                    placeholder="300 - 850">
+                                <div class="error-message" id="creditScore-error">Credit score must be between 300 and
+                                    850</div>
+                                <div class="input-hint">Standard range: 300-850</div>
+                            </div>
+
+                            <div class="field">
+                                <label for="age" class="required">Age</label>
+                                <input type="number" id="age" min="18" max="100" required value=""
+                                    placeholder="18 - 100">
+                                <div class="error-message" id="age-error">Age must be between 18 and 100</div>
+                            </div>
+
+                            <div class="field">
+                                <label for="geography" class="required">Country</label>
+                                <select id="geography">
+                                    <option value="France">France</option>
+                                    <option value="Germany">Germany</option>
+                                    <option value="Spain">Spain</option>
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label for="gender" class="required">Gender</label>
+                                <select id="gender">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label for="tenure" class="required">Tenure (years)</label>
+                                <input type="number" id="tenure" min="0" max="50" required value=""
+                                    placeholder="0 - 50 years">
+                                <div class="error-message" id="tenure-error">Tenure must be between 0 and 50 years</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        • Customer Information Section •
+                    </div>
+                </div>
+
+                <div class="card-right">
+                    <div class="form-section">
+                        <div class="section-title">Account Information</div>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label for="balance" class="required">Account Balance ($)</label>
+                                <input type="number" id="balance" step="any" min="0" max="1000000" required value=""
+                                    placeholder="0 - 1,000,000">
+                                <div class="error-message" id="balance-error">
+                                    Balance must be between $0 and $1,000,000
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label for="numProducts" class="required">Products Owned</label>
+                                <input type="number" id="numProducts" min="1" max="4" required value=""
+                                    placeholder="1 - 4">
+                                <div class="error-message" id="numProducts-error">Number of products must be between 1
+                                    and 4</div>
+                            </div>
+
+                            <div class="field">
+                                <label for="hasCrCard" class="required">Has Credit Card</label>
+                                <select id="hasCrCard">
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label for="isActiveMember" class="required">Active Member</label>
+                                <select id="isActiveMember">
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label for="estimatedSalary" class="required">Estimated Salary ($)</label>
+                                <input type="number" id="estimatedSalary" step="any" min="0" max="1000000" required
+                                    value="" placeholder="0 - 1,000,000">
+                                <div class="error-message" id="estimatedSalary-error">
+                                    Salary must be between $0 and $1,000,000
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="result" class="result-card">
+                        <div class="result-header">
+                            <div class="result-icon" id="result-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="result-text">
+                                <h3 id="result-title">Prediction Result</h3>
+                                <p id="result-subtitle">Analysis complete</p>
+                            </div>
+                        </div>
+
+                        <div class="prediction-badge" id="prediction-badge">Prediction</div>
+
+                        <div class="confidence-meter" id="confidence-meter">
+                            <div class="confidence-header">
+                                <span class="confidence-label">Confidence Level</span>
+                                <span class="confidence-value" id="confidence-value">0%</span>
+                            </div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="confidence-fill" style="width: 0%"></div>
+                            </div>
+                            <div class="confidence-description" id="confidence-desc">
+                                Model prediction reliability
+                            </div>
+                        </div>
+
+                        <div class="explanation-section" id="explanation-section" style="display:none;">
+                            <div class="explanation-title">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Top Contributing Factors
+                            </div>
+                            <div id="explanation-content">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        • Account Information Section •
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <button type="submit" id="submit-btn" class="submit-btn">Run Churn Analysis</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // --- Element Selectors ---
+        const submitBtn = document.getElementById("submit-btn");
+        const demoBtn = document.getElementById("demo-btn");
+        const resultCard = document.getElementById("result");
+        const resultIcon = document.getElementById("result-icon");
+        const resultTitle = document.getElementById("result-title");
+        const resultSubtitle = document.getElementById("result-subtitle");
+        const predictionBadge = document.getElementById("prediction-badge");
+        const confidenceValue = document.getElementById("confidence-value");
+        const confidenceFill = document.getElementById("confidence-fill");
+        const confidenceDesc = document.getElementById("confidence-desc");
+        const confidenceMeter = document.getElementById("confidence-meter");
+        const explanationSection = document.getElementById("explanation-section");
+        const explanationContent = document.getElementById("explanation-content");
+
+        // Backend endpoint
+        const API_ENDPOINT = "/predict";
+
+        // ---------------------------
+        // DEMO DATA HANDLER
+        // ---------------------------
+        demoBtn.addEventListener("click", () => {
+            // Helper for random integers
+            const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+            // Helper for random choice
+            const choice = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+            // Set values
+            document.getElementById("creditScore").value = randInt(550, 850);
+            document.getElementById("age").value = randInt(22, 65);
+            document.getElementById("geography").value = choice(["France", "Germany", "Spain"]);
+            document.getElementById("gender").value = choice(["Male", "Female"]);
+            document.getElementById("tenure").value = randInt(1, 10);
+
+            // 50% chance of 0 balance, else random high balance
+            const hasBalance = Math.random() > 0.3;
+            document.getElementById("balance").value = hasBalance ? randInt(50000, 150000) : 0;
+
+            document.getElementById("numProducts").value = randInt(1, 2); // 3-4 usually means churn, keep it realistic
+            document.getElementById("hasCrCard").value = choice(["1", "0"]);
+            document.getElementById("isActiveMember").value = choice(["1", "0"]);
+            document.getElementById("estimatedSalary").value = randInt(30000, 150000);
+
+            // Validate immediately to show green borders
+            validateAllInputs();
+
+            // Scroll to bottom button to encourage clicking
+            submitBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+
+        // ---------------------------
+        // VALIDATION RULES
+        // ---------------------------
+        const validationRules = {
+            creditScore: { min: 300, max: 850 },
+            age: { min: 18, max: 100 },
+            tenure: { min: 0, max: 50 },
+            balance: { min: 0, max: 1000000 },
+            numProducts: { min: 1, max: 4 },
+            estimatedSalary: { min: 0, max: 1000000 }
+        };
+
+        function validateInput(input, fieldId, errorEl) {
+            const value = parseFloat(input.value);
+            const rules = validationRules[fieldId];
+
+            if (!rules) return true;
+
+            let isValid = true;
+            let message = "";
+
+            if (isNaN(value)) {
+                isValid = false;
+                message = "Please enter a valid number";
+            } else if (value < rules.min) {
+                isValid = false;
+                message = `Minimum value is ${rules.min}`;
+            } else if (value > rules.max) {
+                isValid = false;
+                message = `Maximum value is ${rules.max}`;
+            }
+
+            if (isValid) {
+                input.classList.remove("error");
+                input.classList.add("valid");
+                if (errorEl) errorEl.style.display = "none";
+            } else {
+                input.classList.remove("valid");
+                input.classList.add("error");
+                if (errorEl) {
+                    errorEl.textContent = message;
+                    errorEl.style.display = "block";
+                }
+            }
+
+            return isValid;
+        }
+
+        function validateAllInputs() {
+            let allValid = true;
+            document.querySelectorAll("input[type='number']").forEach(input => {
+                const fieldId = input.id;
+                const errorEl = document.getElementById(`${fieldId}-error`);
+                if (!validateInput(input, fieldId, errorEl)) {
+                    allValid = false;
+                }
+            });
+            return allValid;
+        }
+
+        // ---------------------------
+        // FORM SUBMISSION HANDLER
+        // ---------------------------
+        document.getElementById("churn-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            if (!validateAllInputs()) {
+                alert("Please correct highlighted fields.");
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.classList.add("button-loading");
+            submitBtn.textContent = "";
+
+            const payload = {
+                CreditScore: parseInt(document.getElementById("creditScore").value),
+                Geography: document.getElementById("geography").value,
+                Gender: document.getElementById("gender").value,
+                Age: parseInt(document.getElementById("age").value),
+                Tenure: parseInt(document.getElementById("tenure").value),
+                Balance: parseFloat(document.getElementById("balance").value),
+                NumOfProducts: parseInt(document.getElementById("numProducts").value),
+                HasCrCard: parseInt(document.getElementById("hasCrCard").value),
+                IsActiveMember: parseInt(document.getElementById("isActiveMember").value),
+                EstimatedSalary: parseFloat(document.getElementById("estimatedSalary").value),
+            };
+
+            try {
+                // UI Reset
+                resultCard.classList.add("show");
+                resultTitle.textContent = "Processing Analysis...";
+                resultSubtitle.textContent = "Running machine learning model...";
+                predictionBadge.textContent = "Analyzing...";
+                predictionBadge.className = "prediction-badge";
+                confidenceValue.textContent = "0%";
+                confidenceFill.style.width = "0%";
+                explanationSection.style.display = "none";
+
+                const response = await fetch(API_ENDPOINT, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // --- Process Main Result ---
+                const prob = data.probability;
+                const churn = data.churn;
+
+                // Calculate Confidence (heuristic)
+                let confidence = Math.abs(prob - 0.5) * 2 + 0.3;
+                confidence = Math.min(Math.max(confidence, 0.3), 0.98);
+
+                const formatted = {
+                    churn: churn,
+                    probability: prob,
+                    confidence: confidence,
+                    explanation: data.explanation // Pass the explanation array
+                };
+
+                displayResult(formatted);
+
+            } catch (error) {
+                console.error("Prediction error:", error);
+                showErrorState();
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove("button-loading");
+                submitBtn.textContent = "Run Churn Analysis";
+            }
+        });
+
+        // ---------------------------
+        // DISPLAY RESULT
+        // ---------------------------
+        function displayResult(data) {
+            const willStay = !data.churn;
+            const probPct = (data.probability * 100).toFixed(1);
+            const confidencePct = Math.round(data.confidence * 100);
+
+            if (willStay) {
+                resultIcon.className = "result-icon stay";
+                resultIcon.innerHTML = stayIcon();
+                resultTitle.textContent = "Customer Will Stay";
+                resultSubtitle.textContent = "Low churn risk predicted";
+                predictionBadge.textContent = "WILL STAY";
+                predictionBadge.className = "prediction-badge badge-stay";
+                confidenceMeter.className = "confidence-meter confidence-stay";
+            } else {
+                resultIcon.className = "result-icon leave";
+                resultIcon.innerHTML = leaveIcon();
+                resultTitle.textContent = "Customer May Leave";
+                resultSubtitle.textContent = "High churn risk predicted";
+                predictionBadge.textContent = "MAY LEAVE";
+                predictionBadge.className = "prediction-badge badge-leave";
+                confidenceMeter.className = "confidence-meter confidence-leave";
+            }
+
+            // Animate confidence bar
+            setTimeout(() => {
+                confidenceValue.textContent = `${probPct}%`;
+                confidenceFill.style.width = `${confidencePct}%`;
+            }, 200);
+
+            if (confidencePct >= 85) confidenceDesc.textContent = "Very strong confidence";
+            else if (confidencePct >= 70) confidenceDesc.textContent = "High confidence";
+            else if (confidencePct >= 60) confidenceDesc.textContent = "Moderate confidence";
+            else confidenceDesc.textContent = "Low confidence";
+
+            // --- Render Explanation ---
+            if (data.explanation && data.explanation.length > 0) {
+                explanationContent.innerHTML = "";
+                explanationSection.style.display = "block";
+
+                data.explanation.forEach(factor => {
+                    const isRiskFactor = factor.impact > 0;
+                    // For "Stay" prediction, negative impact is good (safe)
+                    // For "Leave" prediction, positive impact is bad (risk)
+
+                    let badgeClass = isRiskFactor ? "impact-risk" : "impact-safe";
+                    let badgeText = isRiskFactor ? "Increases Risk" : "Reduces Risk";
+
+                    const div = document.createElement("div");
+                    div.className = "factor-item";
+                    div.innerHTML = `
+                        <span class="factor-name">${factor.feature}</span>
+                        <span class="factor-impact ${badgeClass}">${badgeText}</span>
+                    `;
+                    explanationContent.appendChild(div);
+                });
+            }
+        }
+
+        function showErrorState() {
+            resultIcon.className = "result-icon leave";
+            resultIcon.innerHTML = leaveIcon();
+            resultTitle.textContent = "Error Occurred";
+            resultSubtitle.textContent = "Unable to reach prediction server";
+            predictionBadge.textContent = "ERROR";
+            predictionBadge.className = "prediction-badge badge-leave";
+            confidenceValue.textContent = "0%";
+            confidenceFill.style.width = "0%";
+            confidenceDesc.textContent = "Check backend logs.";
+            explanationSection.style.display = "none";
+        }
+
+        function stayIcon() {
+            return `
+        <svg width="24" height="24" fill="#10B981">
+            <path d="M9 12l2 2 4-4M5 12a7 7 0 1114 0 7 7 0 01-14 0z"/>
+        </svg>`;
+        }
+
+        function leaveIcon() {
+            return `
+        <svg width="24" height="24" fill="#EF4444">
+            <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2M5 12a7 7 0 1114 0 7 7 0 01-14 0z"/>
+        </svg>`;
+        }
+
+        // Auto-fill on load for convenience (Optional - remove if you prefer blank)
+        // window.onload = () => document.getElementById("demo-btn").click();
+    </script>
+
+</body>
+
+</html>
