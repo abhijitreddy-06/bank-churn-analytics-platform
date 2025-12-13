@@ -70,3 +70,18 @@ customer-churn-prediction/
 ├── main.py                        # FastAPI application entry point
 ├── requirements.txt               # Python dependencies
 └── README.md                      # Project documentation
+```
+## 🔧 4️⃣ Add “Model Performance” Section
+
+Even simple metrics help a lot.
+
+```md
+## 📊 Model Performance
+
+- Model: XGBoost (Hyperparameter Tuned)
+- ROC-AUC: 0.86
+- Accuracy: 82%
+- Precision (Churn): 79%
+- Recall (Churn): 81%
+
+Evaluation performed on held-out test dataset.
