@@ -58,7 +58,7 @@ This platform helps banks:
   "tenure": 3,
   "is_active_member": 0
 }
-
+```
 ## 📂 Project Structure
 
 ```bash
