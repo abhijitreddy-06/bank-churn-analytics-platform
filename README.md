@@ -25,6 +25,40 @@ Unlike standard "black box" predictions, this application provides **Explainable
 * **Backend:** FastAPI, Uvicorn, Pydantic
 * **Machine Learning:** XGBoost, Scikit-Learn, Pandas, Numpy, SHAP/Joblib
 
+## 💼 Business Impact
+
+Customer churn directly impacts bank profitability, as acquiring new customers is significantly more expensive than retaining existing ones.
+
+This platform helps banks:
+- Identify high-risk customers early
+- Understand *why* a customer is likely to churn
+- Enable relationship managers to take data-driven retention actions
+- Reduce revenue loss and improve customer lifetime value (CLV)
+
+## ⚙️ How It Works
+
+1. User enters customer details in the frontend UI
+2. Frontend sends data to FastAPI `/predict` endpoint
+3. Backend validates input using Pydantic schemas
+4. Preprocessing pipeline transforms raw features
+5. XGBoost model predicts churn probability
+6. SHAP explains feature contributions
+7. Prediction + explanations are returned to the UI
+
+## 🔌 API Example
+
+**Endpoint:** `/predict`
+
+**Request:**
+```json
+{
+  "age": 42,
+  "credit_score": 610,
+  "balance": 125000,
+  "tenure": 3,
+  "is_active_member": 0
+}
+
 ## 📂 Project Structure
 
 ```bash
